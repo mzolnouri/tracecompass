@@ -8,6 +8,7 @@
  * Contributors:
  *     Bernd Hufmann - initial API and implementation
  *     Patrick Tasse - added icons
+ *     Mahdi Zolnouri - added icons
  *******************************************************************************/
 package org.eclipse.tracecompass.internal.tmf.ui;
 
@@ -50,6 +51,7 @@ public interface ITmfImageConstants {
     String IMG_UI_SHOW_LOST_EVENTS = ICONS_PATH + "elcl16/hide_lost_events.gif";
     String IMG_UI_SHOW_HIST_TRACES = ICONS_PATH + "elcl16/show_hist_traces.gif";
     String IMG_UI_LINK = ICONS_PATH + "elcl16/link.gif";
+    String IMG_UI_BREAK_THREADS_HIERARCHY = ICONS_PATH + "elcl16/break_threads_hierarchy.png";
 
     /* eview16 */
     String IMG_UI_SEQ_DIAGRAM_OBJ = ICONS_PATH + "eview16/sequencediagram_view.gif";

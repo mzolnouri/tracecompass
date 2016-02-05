@@ -19,6 +19,12 @@ public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.tracecompass.internal.tmf.ui.messages"; //$NON-NLS-1$
 
+
+
+
+
+
+
     public static String AddBookmarkDialog_Alpha;
     public static String AddBookmarkDialog_Color;
     public static String AddBookmarkDialog_Message;
@@ -93,6 +99,7 @@ public class Messages extends NLS {
     public static String TmfTimeFilterDialog_CHECK_SUBTREE;
     public static String TmfTimeFilterDialog_UNCHECK_SUBTREE;
 
+
     public static String TmfTimeTipHandler_DURATION;
     public static String TmfTimeTipHandler_LINK_SOURCE;
     public static String TmfTimeTipHandler_LINK_SOURCE_TIME;
@@ -136,6 +143,8 @@ public class Messages extends NLS {
     public static String TmfTimeGraphViewer_NextMarkerActionText;
     public static String TmfTimeGraphViewer_PreviousMarkerActionText;
     public static String TmfTimeGraphViewer_ShowMarkersMenuText;
+    public static String TmfTimeGraphViewer_BreakThreadsHierarchyActionNameText;
+    public static String TmfTimeGraphViewer_BreakThreadsHierarchyActionToolTipText;
 
     public static String Utils_ClockCyclesUnit;
 

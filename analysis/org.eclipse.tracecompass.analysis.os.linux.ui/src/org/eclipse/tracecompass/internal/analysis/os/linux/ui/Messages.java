@@ -17,6 +17,8 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.tracecompass.internal.analysis.os.linux.ui.messages"; //$NON-NLS-1$
 
+
+
     public static String ControlFlowView_birthTimeColumn;
     public static String ControlFlowView_tidColumn;
     public static String ControlFlowView_ptidColumn;
@@ -37,6 +39,7 @@ public class Messages extends NLS {
     public static String ControlFlowView_uncheckInactiveToolTip;
     public static String ControlFlowView_attributeSyscallName;
     public static String ControlFlowView_attributeCpuName;
+    public static String ControlFlowView_breakThreadsHierarchyLabel;
 
     public static String ResourcesView_stateTypeName;
     public static String ResourcesView_multipleStates;

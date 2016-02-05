@@ -12,6 +12,7 @@
  *   Geneviève Bastien - Move code to provide base classes for time graph view
  *   Marc-Andre Laperle - Add time zone preference
  *   Geneviève Bastien - Add event links between entries
+ *   Mahdi Zolnouri - Add new actions to local tool bar manager
  *******************************************************************************/
 
 package org.eclipse.tracecompass.tmf.ui.views.timegraph;
@@ -1884,6 +1885,8 @@ public abstract class AbstractTimeGraphView extends TmfView implements ITmfTimeA
      * @param manager the tool bar manager
      */
     protected void fillLocalToolBar(IToolBarManager manager) {
+        manager.add(fTimeGraphWrapper.getTimeGraphViewer().getBreakThreadsHierarchyAction());
+        manager.add(new Separator());
         if (fFilterColumns != null && fFilterLabelProvider != null && fFilterColumns.length > 0) {
             manager.add(fTimeGraphWrapper.getShowFilterDialogAction());
         }

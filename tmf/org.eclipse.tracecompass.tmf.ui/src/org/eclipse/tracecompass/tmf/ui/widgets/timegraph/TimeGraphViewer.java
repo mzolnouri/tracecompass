@@ -12,6 +12,7 @@
  *   Alvaro Sanchez-Leon - Adapted for TMF
  *   Patrick Tasse - Refactoring
  *   Geneviève Bastien - Add event links between entries
+ *   Mahdi Zolnouri - add new action for the button in the Controlflow local tool bar
  *****************************************************************************/
 
 package org.eclipse.tracecompass.tmf.ui.widgets.timegraph;
@@ -169,6 +170,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     private Action fNextMarkerAction;
     private Action fPreviousMarkerAction;
     private MenuManager fMarkersMenu;
+    private Action fBreakThreadsHierarchyAction;
 
     /** The list of bookmarks */
     private final List<IMarkerEvent> fBookmarks = new ArrayList<>();
@@ -2049,16 +2051,28 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     }
 
     /**
-     * Get the show filter dialog action.
-     *
-     * @return The Action object
+     * Get the break threads hierarchy action
+     * @return fBreakThreadsHierarchyAction
      * @since 2.0
      */
-    public ShowFilterDialogAction getShowFilterDialogAction() {
-        if (fShowFilterDialogAction == null) {
-            fShowFilterDialogAction = new ShowFilterDialogAction(this);
+    public IAction getBreakThreadsHierarchyAction() {
+        if(fBreakThreadsHierarchyAction == null){
+            fBreakThreadsHierarchyAction = new Action() {
+//                @Override
+//                public void runWithEvent(Event event) {
+//                    boolean extend = (event.stateMask & SWT.SHIFT) != 0;
+//                    fTimeGraphCtrl.followArrowBwd(extend);
+//                    adjustVerticalScrollBar();
+//                }
+            };
+            fBreakThreadsHierarchyAction.setText(Messages.TmfTimeGraphViewer_BreakThreadsHierarchyActionNameText);
+            fBreakThreadsHierarchyAction.setToolTipText(Messages.TmfTimeGraphViewer_BreakThreadsHierarchyActionToolTipText);
+            fBreakThreadsHierarchyAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_BREAK_THREADS_HIERARCHY));
+//            if (fBreakThreadsHierarchyAction != null) {
+//                fBreakThreadsHierarchyAction.setEnabled(!fBreakThreadsHierarchyAction.isChecked());
+//            }
         }
-        return fShowFilterDialogAction;
+        return fBreakThreadsHierarchyAction;
     }
 
     /**
@@ -2104,6 +2118,19 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
             fToggleBookmarkAction.setImageDescriptor(ADD_BOOKMARK);
         }
         return fToggleBookmarkAction;
+    }
+
+    /**
+     * Get the show filter dialog action.
+     *
+     * @return The Action object
+     * @since 2.0
+     */
+    public ShowFilterDialogAction getShowFilterDialogAction() {
+        if (fShowFilterDialogAction == null) {
+            fShowFilterDialogAction = new ShowFilterDialogAction(this);
+        }
+        return fShowFilterDialogAction;
     }
 
     /**
@@ -2531,5 +2558,7 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         layout.marginRight = Math.max(0, marginSize);
         fTimeAlignedComposite.layout();
     }
+
+
 
 }
