@@ -10,6 +10,7 @@
  *   Samuel Gagnon - Initial implementation
  **********************************************************************/
 package org.eclipse.tracecompass.analysis.os.linux.ui.views.kernelmemoryusage;
+
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.Format;
@@ -17,6 +18,7 @@ import java.text.ParsePosition;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.tracecompass.analysis.os.linux.core.kernelmemoryusage.KernelMemoryAnalysisModule;
 import org.eclipse.tracecompass.internal.analysis.os.linux.ui.Activator;
@@ -94,25 +96,27 @@ public class KernelMemoryUsageViewer extends TmfCommonXLineChartViewer {
      */
     public KernelMemoryUsageViewer(Composite parent) {
         super(parent, Messages.MemoryUsageViewer_title, Messages.MemoryUsageViewer_xAxis, Messages.MemoryUsageViewer_yAxis);
+        // SAMUEL : Ce bloc de code était dans initializeDataSource() avant. Il me semble que c'est plus
+        // logique qu'il soit ici. Non? D'ailleurs, pourquoi faisait-on chart.getDisplay.asynExec ?
+        Chart chart = getSwtChart();
+//        chart.getDisplay().asyncExec(new Runnable() {
+//            @Override
+//            public void run() {
+                chart.getAxisSet().getYAxis(0).getTick().setFormat(new MemoryFormat());
+                chart.getLegend().setPosition(SWT.BOTTOM);
+//            }
+//        });
     }
 
     @Override
     protected void initializeDataSource() {
         ITmfTrace trace = getTrace();
         if (trace != null) {
-
             fModule = TmfTraceUtils.getAnalysisModuleOfClass(trace, TmfStateSystemAnalysisModule.class, KernelMemoryAnalysisModule.ID);
             if (fModule == null) {
                 return;
             }
             fModule.schedule();
-            Chart chart = getSwtChart();
-            chart.getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    chart.getAxisSet().getYAxis(0).getTick().setFormat(new MemoryFormat());
-                }
-            });
         }
     }
 
@@ -197,15 +201,12 @@ public class KernelMemoryUsageViewer extends TmfCommonXLineChartViewer {
                 selectedThreadValues[i] += selectThreadValuesShift;
             }
             setSeries(Messages.MemoryUsageViewer_Total, totalKernelMemoryValues);
-            setSeries(Messages.SelectedThread_Value, selectedThreadValues);
+            setSeries(fSelectedThread, selectedThreadValues);
             updateDisplay();
 
-        } catch (StateSystemDisposedException e1) {
-            Activator.getDefault().logError(e1.getMessage(), e1);
-        } catch (AttributeNotFoundException e2) {
-            Activator.getDefault().logError(e2.getMessage(), e2);
+        } catch (StateSystemDisposedException | AttributeNotFoundException e) {
+            Activator.getDefault().logError(e.getMessage(), e);
         }
-
     }
 
     /**
@@ -216,7 +217,7 @@ public class KernelMemoryUsageViewer extends TmfCommonXLineChartViewer {
      */
     public void setSelectedThread(String tid) {
         cancelUpdate();
-        deleteSeries(tid);
+        deleteSeries(fSelectedThread);
         fSelectedThread = tid;
         updateContent();
     }
