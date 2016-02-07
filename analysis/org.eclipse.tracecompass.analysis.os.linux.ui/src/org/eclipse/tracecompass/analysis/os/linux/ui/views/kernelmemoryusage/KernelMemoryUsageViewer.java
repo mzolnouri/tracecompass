@@ -14,9 +14,7 @@ import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
@@ -41,10 +39,13 @@ import org.swtchart.Chart;
  */
 public class KernelMemoryUsageViewer extends TmfCommonXLineChartViewer {
 
+    /**
+     * MemoryFormat
+     *
+     * @author Matthew Khouzam
+     *
+     */
     private static final class MemoryFormat extends Format {
-        /**
-         *
-         */
         private static final long serialVersionUID = 3934127385682676804L;
         private static final String KB = "KB"; //$NON-NLS-1$
         private static final String MB = "MB"; //$NON-NLS-1$
@@ -84,10 +85,6 @@ public class KernelMemoryUsageViewer extends TmfCommonXLineChartViewer {
     private TmfStateSystemAnalysisModule fModule = null;
 
     private String fSelectedThread = "-1";  //$NON-NLS-1$
-    private static final String TOTAL = "total"; //$NON-NLS-1$
-
-    Map<String, Double> lowestValueMap;
-
 
     /**
      * Constructor
@@ -117,38 +114,6 @@ public class KernelMemoryUsageViewer extends TmfCommonXLineChartViewer {
                 }
             });
         }
-
-        fModule.waitForInitialization();
-        ITmfStateSystem ss = fModule.getStateSystem();
-        if (ss == null) {
-            return;
-        }
-
-        ss.waitUntilBuilt();
-        lowestValueMap = new HashMap<>();
-
-        try {
-            List<Integer> threadQuarkList = ss.getSubAttributes(-1, false);
-            for (Integer threadQuark : threadQuarkList) {
-                String tid = ss.getAttributeName(threadQuark);
-                int lowestValueQuark = ss.getQuarkRelative(threadQuark, KernelMemoryAnalysisModule.THREAD_LOWEST_MEMORY_VALUE);
-                // The final state is the lowest memory value of the thread
-                long ts = ss.getCurrentEndTime();
-                ITmfStateInterval lowestValueState = ss.querySingleState(ts, lowestValueQuark);
-                long lowestValue = lowestValueState.getStateValue().unboxLong();
-
-                lowestValueMap.put(tid, (double) lowestValue);
-            }
-
-            double totalIncrementation = lowestValueMap.values().stream().mapToDouble(Double::doubleValue).sum();
-            lowestValueMap.put(TOTAL, totalIncrementation);
-
-        } catch (AttributeNotFoundException e) {
-            Activator.getDefault().logError(e.getMessage(), e);
-        } catch (StateSystemDisposedException e2) {
-            Activator.getDefault().logError(e2.getMessage(), e2);
-        }
-
     }
 
     @Override
@@ -193,7 +158,6 @@ public class KernelMemoryUsageViewer extends TmfCommonXLineChartViewer {
                 List<Integer> threadQuarkList = ss.getSubAttributes(-1, false);
                 for (Integer threadQuark : threadQuarkList) {
                     ITmfStateInterval threadMemoryInterval = kernelState.get(threadQuark);
-
                     long value = threadMemoryInterval.getStateValue().unboxLong();
                     totalKernelMemoryValues[i] += value;
 
@@ -204,10 +168,33 @@ public class KernelMemoryUsageViewer extends TmfCommonXLineChartViewer {
                 }
             }
 
-            // We shift the total consumption up to avoid negative values.
+            /**
+             *  For each thread, we look for its lowest value since the beginning of the trace.
+             *  This way, we can avoid negative values in the plot.
+             */
+            double totalKernelMemoryValuesShift = 0;
+            double selectThreadValuesShift = 0;
+
+            List<ITmfStateInterval> kernelState = ss.queryFullState(end);
+            List<Integer> threadQuarkList = ss.getSubAttributes(-1, false);
+            for (Integer threadQuark : threadQuarkList) {
+                int lowestMemoryQuark = ss.getQuarkRelative(threadQuark, KernelMemoryAnalysisModule.THREAD_LOWEST_MEMORY_VALUE);
+                ITmfStateInterval lowestMemoryInterval = kernelState.get(lowestMemoryQuark);
+                long lowestMemoryValue = lowestMemoryInterval.getStateValue().unboxLong();
+                totalKernelMemoryValuesShift -= lowestMemoryValue; // We want to add up a positive quantity.
+
+                String tid = ss.getAttributeName(threadQuark);
+                if (tid.equals(fSelectedThread)) {
+                    selectThreadValuesShift = -lowestMemoryValue; // We want to add up a positive quantity.
+                }
+            }
+
+            /**
+             * We shift the two displayed lines up.
+             */
             for (int i = 0; i < xvalues.length; i++) {
-                totalKernelMemoryValues[i] -= lowestValueMap.getOrDefault(TOTAL, (double) 0);
-                selectedThreadValues[i] -= lowestValueMap.getOrDefault(fSelectedThread, (double) 0);
+                totalKernelMemoryValues[i] += totalKernelMemoryValuesShift;
+                selectedThreadValues[i] += selectThreadValuesShift;
             }
             setSeries(Messages.MemoryUsageViewer_Total, totalKernelMemoryValues);
             setSeries(Messages.SelectedThread_Value, selectedThreadValues);
