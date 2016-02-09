@@ -32,7 +32,7 @@
                class="org.eclipse.tracecompass.tmf.tests.stubs.trace.xml.TmfXmlTraceStub">
          </tracetype>
       </module>
-          <module
+      <module
             analysis_module="org.eclipse.tracecompass.analysis.os.linux.core.kernelmemoryusage.KernelMemoryAnalysisModule"
             automatic="false"
             id="org.eclipse.tracecompass.analysis.os.linux.core.kernelmemoryanalysismodule"

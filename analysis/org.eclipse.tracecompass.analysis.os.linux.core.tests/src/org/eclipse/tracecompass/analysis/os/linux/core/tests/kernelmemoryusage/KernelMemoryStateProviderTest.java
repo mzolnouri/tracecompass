@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 École Polytechnique de Montréal
+ * Copyright (c) 2016 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -7,8 +7,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Geneviève Bastien - Initial API and implementation
- *   Julien Daoust - Najib Arbaoui : Tests allocation et deallocation Kernel Memory
+ *   Julien Daoust & Najib Arbaoui - Initial API and implementation
+ *                                 - Tests allocation and deallocation Kernel Memory
  *******************************************************************************/
 
 package org.eclipse.tracecompass.analysis.os.linux.core.tests.kernelmemoryusage;
@@ -50,7 +50,8 @@ import org.junit.Test;
 /**
  * Test suite for the {@link KernelMemoryAnalysisModule} class
  *
- * @author Julien Daoust - Najib Arbaoui
+ * @author Julien Daoust
+ * @author Najib Arbaoui
  */
 public class KernelMemoryStateProviderTest {
 
@@ -149,10 +150,11 @@ public class KernelMemoryStateProviderTest {
         threadEvent.put(29L, PAGE_SIZE); // kmem_mm_page_alloc at timestamp = 29
         threadEvent.put(30L, PAGE_SIZE); // kmem_mm_page_alloc at timestamp = 30
 
-        // loop a Map and check if all allocation and deallocation of kernel memory are done proprely
+        // loop a Map and check if all allocation and deallocation of kernel
+        // memory are done proprely
         for (Map.Entry<Long, Long> entry : threadEvent.entrySet()) {
             try {
-                ITmfStateInterval kernelState = ss.querySingleState(entry.getKey(),0);
+                ITmfStateInterval kernelState = ss.querySingleState(entry.getKey(), 0);
                 long value = kernelState.getStateValue().unboxLong();
                 totalMemory += entry.getValue();
                 assertEquals(value, totalMemory);
