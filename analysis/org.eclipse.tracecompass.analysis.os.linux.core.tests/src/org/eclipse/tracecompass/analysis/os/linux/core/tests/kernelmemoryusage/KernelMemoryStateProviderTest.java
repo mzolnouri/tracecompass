@@ -168,4 +168,48 @@ public class KernelMemoryStateProviderTest {
 
     }
 
+
+    /**
+     * Tests with values outside Interval
+     * TimeRangeException must be throwned
+     */
+    @Test
+    public void testWithValueOutSideInterval() {
+
+        fModule.schedule();
+        fModule.waitForCompletion();
+        ITmfStateSystem ss = fModule.getStateSystem();
+        assertNotNull(ss);
+        assertEquals(1L, ss.getStartTime());
+        assertEquals(30L, ss.getCurrentEndTime());
+        boolean thrown1 = false;
+        boolean thrown2 = false;
+
+        try {
+            ITmfStateInterval kernelState1 = ss.querySingleState(0L, 0);
+            long value =0;
+            value = kernelState1.getStateValue().unboxLong();
+            assertEquals(value, 0);
+        } catch (org.eclipse.tracecompass.statesystem.core.exceptions.TimeRangeException  e) {
+            thrown1 = true;
+        }
+        catch (AttributeNotFoundException | StateSystemDisposedException e) {
+            fail(e.getMessage());
+        }
+
+
+        try {
+            ITmfStateInterval kernelState2 = ss.querySingleState(31L, 0);
+            long value =0;
+            value = kernelState2.getStateValue().unboxLong();
+            assertEquals(value, 0);
+        } catch (org.eclipse.tracecompass.statesystem.core.exceptions.TimeRangeException  e) {
+            thrown2 = true;
+        }
+        catch (AttributeNotFoundException | StateSystemDisposedException e) {
+            fail(e.getMessage());
+        }
+        assertTrue(thrown1);
+        assertTrue(thrown2);
+    }
 }
