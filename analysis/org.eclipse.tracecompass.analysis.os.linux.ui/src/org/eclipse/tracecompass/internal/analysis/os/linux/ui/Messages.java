@@ -7,6 +7,7 @@
  *
  * Contributors:
  *     Patrick Tassé - Initial API and implementation
+ *     Mahdi Zolnouri - Add new String for ControlFlowView
  *******************************************************************************/
 
 package org.eclipse.tracecompass.internal.analysis.os.linux.ui;
@@ -36,6 +37,8 @@ public class Messages extends NLS {
     public static String ControlFlowView_uncheckInactiveToolTip;
     public static String ControlFlowView_attributeSyscallName;
     public static String ControlFlowView_attributeCpuName;
+    public static String ControlFlowView_breakThreadsHierarchyLabel;
+    public static String ControlFlowView_breakThreadsHierarchyToolTip;
 
     public static String ResourcesView_stateTypeName;
     public static String ResourcesView_multipleStates;

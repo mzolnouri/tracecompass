@@ -8,7 +8,6 @@
  * Contributors:
  *     Bernd Hufmann - initial API and implementation
  *     Patrick Tasse - added icons
- *     Mahdi Zolnouri - added icons
  *******************************************************************************/
 package org.eclipse.tracecompass.internal.tmf.ui;
 

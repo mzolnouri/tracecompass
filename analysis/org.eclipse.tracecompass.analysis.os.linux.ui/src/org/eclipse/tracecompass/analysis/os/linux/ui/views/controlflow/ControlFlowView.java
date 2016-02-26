@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.tracecompass.analysis.os.linux.core.kernelanalysis.Attributes;
 import org.eclipse.tracecompass.analysis.os.linux.core.kernelanalysis.KernelAnalysisModule;
 import org.eclipse.tracecompass.internal.analysis.os.linux.ui.Activator;
+import org.eclipse.tracecompass.internal.analysis.os.linux.ui.IControlflowImageConstants;
 import org.eclipse.tracecompass.internal.analysis.os.linux.ui.Messages;
 import org.eclipse.tracecompass.internal.analysis.os.linux.ui.views.controlflow.ControlFlowColumnComparators;
 import org.eclipse.tracecompass.statesystem.core.ITmfStateSystem;
@@ -155,6 +156,12 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
         followArrowFwdAction.setText(Messages.ControlFlowView_followCPUFwdText);
         followArrowFwdAction.setToolTipText(Messages.ControlFlowView_followCPUFwdText);
         manager.add(followArrowFwdAction);
+
+        IAction breakThreadsHierarchyAction = getTimeGraphCombo().getTimeGraphViewer().getFollowArrowFwdAction();
+        breakThreadsHierarchyAction.setText(Messages.ControlFlowView_breakThreadsHierarchyLabel);
+        breakThreadsHierarchyAction.setToolTipText(Messages.ControlFlowView_breakThreadsHierarchyToolTip);
+        breakThreadsHierarchyAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(IControlflowImageConstants.IMG_UI_BREAK_THREADS_HIERARCHY));
+        manager.add(breakThreadsHierarchyAction);
     }
 
     @Override
