@@ -2058,19 +2058,10 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     public IAction getBreakThreadsHierarchyAction() {
         if(fBreakThreadsHierarchyAction == null){
             fBreakThreadsHierarchyAction = new Action() {
-//                @Override
-//                public void runWithEvent(Event event) {
-//                    boolean extend = (event.stateMask & SWT.SHIFT) != 0;
-//                    fTimeGraphCtrl.followArrowBwd(extend);
-//                    adjustVerticalScrollBar();
-//                }
             };
             fBreakThreadsHierarchyAction.setText(Messages.TmfTimeGraphViewer_BreakThreadsHierarchyActionNameText);
             fBreakThreadsHierarchyAction.setToolTipText(Messages.TmfTimeGraphViewer_BreakThreadsHierarchyActionToolTipText);
             fBreakThreadsHierarchyAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_BREAK_THREADS_HIERARCHY));
-//            if (fBreakThreadsHierarchyAction != null) {
-//                fBreakThreadsHierarchyAction.setEnabled(!fBreakThreadsHierarchyAction.isChecked());
-//            }
         }
         return fBreakThreadsHierarchyAction;
     }
@@ -2558,7 +2549,4 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
         layout.marginRight = Math.max(0, marginSize);
         fTimeAlignedComposite.layout();
     }
-
-
-
 }

@@ -210,7 +210,7 @@ public class KernelMemoryUsageComposite extends AbstractTmfTreeViewer {
             /* Get the quarks for each cpu */
             List<Integer> cpuNodes = kernelSs.getSubAttributes(cpusNode, false);
 
-            execName = getCurrentIntervalStateValue(tid, kernelSs, cpuNodes);
+            execName = getCurrentStateIntervalValue(tid, kernelSs, cpuNodes);
             if(execName != null) {
                 return execName;
             }
@@ -220,15 +220,8 @@ public class KernelMemoryUsageComposite extends AbstractTmfTreeViewer {
         return tid;
     }
 
-    /**
-     * @param tid
-     * @param kernelSs
-     * @param cpuNodes
-     * @return execName if different of null else, the name is not found
-     */
-
-    private String getCurrentIntervalStateValue(String tid, ITmfStateSystem kernelSs, List<Integer> cpuNodes) {
-        String execName = null;
+    private String getCurrentStateIntervalValue(String tid, ITmfStateSystem kernelSs, List<Integer> cpuNodes) {
+        String currentStateIntervalValue = null;
         for (Integer tidQuark : cpuNodes) {
             if (kernelSs.getAttributeName(tidQuark).equals(tid)) {
                 int execNameQuark;
@@ -247,14 +240,14 @@ public class KernelMemoryUsageComposite extends AbstractTmfTreeViewer {
                     if (!execNameInterval.getStateValue().isNull() &&
                             execNameInterval.getStateValue().getType().equals(ITmfStateValue.Type.STRING)) {
                         /*  Here we retrieve the String contained in the state value represented by this interval */
-                        execName = execNameInterval.getStateValue().unboxStr();
-                        fProcessNameMap.put(tid, execName);
-                        return execName;
+                        currentStateIntervalValue = execNameInterval.getStateValue().unboxStr();
+                        fProcessNameMap.put(tid, currentStateIntervalValue);
+                        return currentStateIntervalValue;
                     }
                 }
             }
         }
-        return execName;
+        return currentStateIntervalValue;
 
     }
     /**
