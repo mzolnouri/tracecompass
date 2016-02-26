@@ -12,7 +12,6 @@
  *   Alvaro Sanchez-Leon - Adapted for TMF
  *   Patrick Tasse - Refactoring
  *   Geneviève Bastien - Add event links between entries
- *   Mahdi Zolnouri - add new action for the button in the Controlflow local tool bar
  *****************************************************************************/
 
 package org.eclipse.tracecompass.tmf.ui.widgets.timegraph;
@@ -170,7 +169,6 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
     private Action fNextMarkerAction;
     private Action fPreviousMarkerAction;
     private MenuManager fMarkersMenu;
-    private Action fBreakThreadsHierarchyAction;
 
     /** The list of bookmarks */
     private final List<IMarkerEvent> fBookmarks = new ArrayList<>();
@@ -2048,22 +2046,6 @@ public class TimeGraphViewer implements ITimeDataProvider, SelectionListener {
             }
         }
         return fFollowArrowBwdAction;
-    }
-
-    /**
-     * Get the break threads hierarchy action
-     * @return fBreakThreadsHierarchyAction
-     * @since 2.0
-     */
-    public IAction getBreakThreadsHierarchyAction() {
-        if(fBreakThreadsHierarchyAction == null){
-            fBreakThreadsHierarchyAction = new Action() {
-            };
-            fBreakThreadsHierarchyAction.setText(Messages.TmfTimeGraphViewer_BreakThreadsHierarchyActionNameText);
-            fBreakThreadsHierarchyAction.setToolTipText(Messages.TmfTimeGraphViewer_BreakThreadsHierarchyActionToolTipText);
-            fBreakThreadsHierarchyAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(ITmfImageConstants.IMG_UI_BREAK_THREADS_HIERARCHY));
-        }
-        return fBreakThreadsHierarchyAction;
     }
 
     /**

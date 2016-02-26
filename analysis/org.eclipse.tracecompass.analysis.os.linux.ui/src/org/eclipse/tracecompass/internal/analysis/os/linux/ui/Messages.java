@@ -36,7 +36,6 @@ public class Messages extends NLS {
     public static String ControlFlowView_uncheckInactiveToolTip;
     public static String ControlFlowView_attributeSyscallName;
     public static String ControlFlowView_attributeCpuName;
-    public static String ControlFlowView_breakThreadsHierarchyLabel;
 
     public static String ResourcesView_stateTypeName;
     public static String ResourcesView_multipleStates;
