@@ -10,6 +10,7 @@
  *   Patrick Tasse - Initial API and implementation
  *   Geneviève Bastien - Move code to provide base classes for time graph view
  *   Christian Mansky - Add check active / uncheck inactive buttons
+ *   Mahdi Zolnouri - Add break threads hieracrhy button
  *******************************************************************************/
 
 package org.eclipse.tracecompass.analysis.os.linux.ui.views.controlflow;
@@ -23,10 +24,13 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
+//import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.tracecompass.analysis.os.linux.core.kernelanalysis.Attributes;
 import org.eclipse.tracecompass.analysis.os.linux.core.kernelanalysis.KernelAnalysisModule;
 import org.eclipse.tracecompass.internal.analysis.os.linux.ui.Activator;
@@ -76,6 +80,7 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
     private static final String PTID_COLUMN = Messages.ControlFlowView_ptidColumn;
     private static final String BIRTH_TIME_COLUMN = Messages.ControlFlowView_birthTimeColumn;
     private static final String TRACE_COLUMN = Messages.ControlFlowView_traceColumn;
+    private Action fBreakThreadsHierarchyAction;
 
     private static final String[] COLUMN_NAMES = new String[] {
             PROCESS_COLUMN,
@@ -137,7 +142,11 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
 
     @Override
     protected void fillLocalToolBar(IToolBarManager manager) {
+        IAction breakThreadsHierarchyAction = getBreakThrreadsHierarchyAction();
+        manager.add(breakThreadsHierarchyAction);
+
         super.fillLocalToolBar(manager);
+
         IDialogSettings settings = Activator.getDefault().getDialogSettings();
         IDialogSettings section = settings.getSection(getClass().getName());
         if (section == null) {
@@ -156,12 +165,21 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
         followArrowFwdAction.setText(Messages.ControlFlowView_followCPUFwdText);
         followArrowFwdAction.setToolTipText(Messages.ControlFlowView_followCPUFwdText);
         manager.add(followArrowFwdAction);
+    }
 
-        IAction breakThreadsHierarchyAction = getTimeGraphCombo().getTimeGraphViewer().getFollowArrowFwdAction();
-        breakThreadsHierarchyAction.setText(Messages.ControlFlowView_breakThreadsHierarchyLabel);
-        breakThreadsHierarchyAction.setToolTipText(Messages.ControlFlowView_breakThreadsHierarchyToolTip);
-        breakThreadsHierarchyAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(IControlflowImageConstants.IMG_UI_BREAK_THREADS_HIERARCHY));
-        manager.add(breakThreadsHierarchyAction);
+    private IAction getBreakThrreadsHierarchyAction() {
+        if (fBreakThreadsHierarchyAction == null) {
+            fBreakThreadsHierarchyAction = new Action() {
+                @Override
+                public void runWithEvent(Event event) {
+                }
+            };
+            fBreakThreadsHierarchyAction.setText(Messages.ControlFlowView_breakThreadsHierarchyLabel);
+            fBreakThreadsHierarchyAction.setToolTipText(Messages.ControlFlowView_breakThreadsHierarchyToolTip);
+            fBreakThreadsHierarchyAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(IControlflowImageConstants.IMG_UI_BREAK_THREADS_HIERARCHY));
+
+        }
+        return fBreakThreadsHierarchyAction;
     }
 
     @Override
