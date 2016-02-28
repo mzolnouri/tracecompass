@@ -183,7 +183,10 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
                     /**************************************************************************************************************/
                     ITmfStateSystem ssq = checkNotNull(TmfStateSystemAnalysisModule.getStateSystem(trace, KernelAnalysisModule.ID));
                     final List<ControlFlowEntry> entryList = new ArrayList<>();
+                    //List<TimeGraphEntry> entryListPrev = new ArrayList<>();
                     final Map<Integer, ControlFlowEntry> entryMap = new HashMap<>();
+                    //entryListPrev = getEntryList(trace);
+
                     try {
                         int cpusNode = ssq.getQuarkAbsolute(Attributes.THREADS);
 
@@ -268,9 +271,18 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
                         //System.out.println("Le end time: " + entryList.get(i).getEndTime());
                     }
                     /**************************************************************************************************************/
-                    updateTree(entryList, trace, ssq);
+                    List<TimeGraphEntry> rootListToAdd = new ArrayList<>();
+                    List<TimeGraphEntry> rootListToRemove = getEntryList(ssq);
+
+                    for (ControlFlowEntry entry : entryList) {
+                        rootListToAdd.add(entry);
+                    }
+                    removeFromEntryList(trace, ssq, rootListToRemove);
+                    addToEntryList(trace, ssq, rootListToAdd);
+
+                    //rebuild();
                     refresh();
-                    System.out.println(" Houraa j'ai réussi!!!!!!!!!!!!!!!!!!!!");
+                    //System.out.println(" Houraa j'ai réussi!!!!!!!!!!!!!!!!!!!!");
 
                 }
             };
