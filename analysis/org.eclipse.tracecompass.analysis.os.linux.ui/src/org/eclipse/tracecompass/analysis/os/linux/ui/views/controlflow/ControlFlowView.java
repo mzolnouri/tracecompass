@@ -15,6 +15,8 @@
 
 package org.eclipse.tracecompass.analysis.os.linux.ui.views.controlflow;
 
+import static org.eclipse.tracecompass.common.core.NonNullUtils.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -33,10 +35,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.tracecompass.analysis.os.linux.core.kernelanalysis.Attributes;
 import org.eclipse.tracecompass.analysis.os.linux.core.kernelanalysis.KernelAnalysisModule;
+//import org.eclipse.tracecompass.analysis.os.linux.core.kernelmemoryusage.KernelMemoryAnalysisModule;
 import org.eclipse.tracecompass.internal.analysis.os.linux.ui.Activator;
 import org.eclipse.tracecompass.internal.analysis.os.linux.ui.Messages;
 import org.eclipse.tracecompass.internal.analysis.os.linux.ui.views.controlflow.ControlFlowColumnComparators;
 import org.eclipse.tracecompass.statesystem.core.ITmfStateSystem;
+import org.eclipse.tracecompass.statesystem.core.StateSystemUtils;
 import org.eclipse.tracecompass.statesystem.core.exceptions.AttributeNotFoundException;
 import org.eclipse.tracecompass.statesystem.core.exceptions.StateSystemDisposedException;
 import org.eclipse.tracecompass.statesystem.core.exceptions.StateValueTypeException;
@@ -46,6 +50,7 @@ import org.eclipse.tracecompass.statesystem.core.statevalue.ITmfStateValue;
 import org.eclipse.tracecompass.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.tracecompass.tmf.core.trace.ITmfTrace;
 import org.eclipse.tracecompass.tmf.core.trace.TmfTraceManager;
+//import org.eclipse.tracecompass.tmf.core.trace.TmfTraceUtils;
 import org.eclipse.tracecompass.tmf.ui.views.timegraph.AbstractStateSystemTimeGraphView;
 import org.eclipse.tracecompass.tmf.ui.widgets.timegraph.model.ILinkEvent;
 import org.eclipse.tracecompass.tmf.ui.widgets.timegraph.model.ITimeEvent;
@@ -103,11 +108,8 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
 
     static {
         ImmutableList.Builder<Comparator<ITimeGraphEntry>> builder = ImmutableList.builder();
-        builder.add(ControlFlowColumnComparators.PROCESS_NAME_COLUMN_COMPARATOR)
-               .add(ControlFlowColumnComparators.TID_COLUMN_COMPARATOR)
-               .add(ControlFlowColumnComparators.PTID_COLUMN_COMPARATOR)
-               .add(ControlFlowColumnComparators.BIRTH_TIME_COLUMN_COMPARATOR)
-               .add(ControlFlowColumnComparators.TRACE_COLUMN_COMPARATOR);
+        builder.add(ControlFlowColumnComparators.PROCESS_NAME_COLUMN_COMPARATOR).add(ControlFlowColumnComparators.TID_COLUMN_COMPARATOR).add(ControlFlowColumnComparators.PTID_COLUMN_COMPARATOR).add(
+                ControlFlowColumnComparators.BIRTH_TIME_COLUMN_COMPARATOR).add(ControlFlowColumnComparators.TRACE_COLUMN_COMPARATOR);
         List<Comparator<ITimeGraphEntry>> l = builder.build();
         COLUMN_COMPARATORS = l.toArray(new Comparator[l.size()]);
     }
@@ -171,12 +173,110 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
             fBreakThreadsHierarchyAction = new Action() {
                 @Override
                 public void runWithEvent(Event event) {
+                    /**************************************************************************************************************/
+
+                    ITmfTrace trace = getTrace();
+                    if (trace == null) {
+                        return;
+                    }
+                    System.out.println("/******************************* Les process name et tid *****************************************/");
+                    /**************************************************************************************************************/
+                    ITmfStateSystem ssq = checkNotNull(TmfStateSystemAnalysisModule.getStateSystem(trace, KernelAnalysisModule.ID));
+                    final List<ControlFlowEntry> entryList = new ArrayList<>();
+                    final Map<Integer, ControlFlowEntry> entryMap = new HashMap<>();
+                    try {
+                        int cpusNode = ssq.getQuarkAbsolute(Attributes.THREADS);
+
+                        /* Get the quarks for each cpu */
+                        List<Integer> cpuNodes = ssq.getSubAttributes(cpusNode, false);
+
+                        for (Integer threadQuark : cpuNodes) {
+                            String threadName = ssq.getAttributeName(threadQuark);
+                            int threadId = -1;
+                            try {
+                                threadId = Integer.parseInt(threadName);
+                            } catch (NumberFormatException e1) {
+                                continue;
+                            }
+                            if (threadId <= 0) { // ignore the 'unknown' (-1) and
+                                                 // swapper (0) threads
+                                continue;
+                            }
+                            int execNameQuark;
+                            //int ppidQuark;
+                            try {
+                                execNameQuark = ssq.getQuarkRelative(threadQuark, Attributes.EXEC_NAME);
+                                //ppidQuark = ssq.getQuarkRelative(threadQuark, Attributes.PPID);
+                            } catch (AttributeNotFoundException e) {
+                                /*
+                                 * No information on this thread (yet?), skip it for
+                                 * now
+                                 */
+                                continue;
+                            }
+
+                            List<ITmfStateInterval> execNameIntervals;
+                            execNameIntervals = StateSystemUtils.queryHistoryRange(ssq, execNameQuark, getStartTime(), getEndTime());
+                            for (ITmfStateInterval execNameInterval : execNameIntervals) {
+                                if (!execNameInterval.getStateValue().isNull() &&
+                                        execNameInterval.getStateValue().getType().equals(ITmfStateValue.Type.STRING)) {
+                                    /*
+                                     * Here we retrieve the String contained in
+                                     * the state value represented by this
+                                     * interval
+                                     */
+                                    String execName = execNameInterval.getStateValue().unboxStr();
+                                    //ITmfStateInterval ppidInterval = execNameIntervals.get(1);
+                                    long startTime = execNameInterval.getStartTime();
+                                    long endTime = execNameInterval.getEndTime() + 1;
+                                    //int ppid = ppidInterval.getStateValue().unboxInt();
+                                    ControlFlowEntry entry = entryMap.get(threadId);
+
+                                    if (entry == null) {
+                                        entry = new ControlFlowEntry(threadQuark, trace, execName, threadId, 66666, startTime, endTime);
+                                        entryList.add(entry);
+                                        entryMap.put(threadId, entry);
+                                    } else {
+                                        /*
+                                         * Update the name of the entry to the
+                                         * latest execName and the parent thread id
+                                         * to the latest ppid.
+                                         */
+                                        entry.setName(execName);
+                                        entry.setParentThreadId(66666);
+                                        entry.updateEndTime(endTime);
+                                    }
+
+                                    System.out.println("Le nom de la trace: " + execName);
+                                }
+                            }
+                        }
+                    } catch (AttributeNotFoundException e) {
+                        /*
+                         * can't find the process name, just return the tid
+                         * instead
+                         */
+                    } catch (StateSystemDisposedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    System.out.println("******************************* Yooooooohooooooo *******************************************************");
+                    for(int i = 0; i < entryList.size(); i++){
+                        System.out.println("Le nom entry: " + entryList.get(i).getName());
+                        //System.out.println("Le parent TID: " + entryList.get(i).getParentThreadId());
+                        //System.out.println("Le start time: " + entryList.get(i).getStartTime());
+                        //System.out.println("Le end time: " + entryList.get(i).getEndTime());
+                    }
+                    /**************************************************************************************************************/
+                    updateTree(entryList, trace, ssq);
+                    refresh();
+                    System.out.println(" Houraa j'ai réussi!!!!!!!!!!!!!!!!!!!!");
+
                 }
             };
             fBreakThreadsHierarchyAction.setText(Messages.ControlFlowView_breakThreadsHierarchyLabel);
             fBreakThreadsHierarchyAction.setToolTipText(Messages.ControlFlowView_breakThreadsHierarchyToolTip);
             fBreakThreadsHierarchyAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(IControlflowImageConstants.IMG_UI_BREAK_THREADS_HIERARCHY));
-
         }
         return fBreakThreadsHierarchyAction;
     }
@@ -272,7 +372,8 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
                 return;
             }
             long end = ssq.getCurrentEndTime();
-            if (start == end && !complete) { // when complete execute one last time regardless of end time
+            if (start == end && !complete) { // when complete execute one last
+                                             // time regardless of end time
                 continue;
             }
             final long resolution = Math.max(1, (end - ssq.getStartTime()) / getDisplayWidth());
@@ -291,7 +392,8 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
                         } catch (NumberFormatException e1) {
                             continue;
                         }
-                        if (threadId <= 0) { // ignore the 'unknown' (-1) and swapper (0) threads
+                        if (threadId <= 0) { // ignore the 'unknown' (-1) and
+                                             // swapper (0) threads
                             continue;
                         }
 
@@ -301,7 +403,10 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
                             execNameQuark = ssq.getQuarkRelative(threadQuark, Attributes.EXEC_NAME);
                             ppidQuark = ssq.getQuarkRelative(threadQuark, Attributes.PPID);
                         } catch (AttributeNotFoundException e) {
-                            /* No information on this thread (yet?), skip it for now */
+                            /*
+                             * No information on this thread (yet?), skip it for
+                             * now
+                             */
                             continue;
                         }
                         ITmfStateInterval lastExecNameInterval = prevFullState == null || execNameQuark >= prevFullState.size() ? null : prevFullState.get(execNameQuark);
@@ -313,7 +418,10 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
                                 return;
                             }
                             if (execNameQuark >= fullState.size() || ppidQuark >= fullState.size()) {
-                                /* No information on this thread (yet?), skip it for now */
+                                /*
+                                 * No information on this thread (yet?), skip it
+                                 * for now
+                                 */
                                 continue;
                             }
                             ITmfStateInterval execNameInterval = fullState.get(execNameQuark);
@@ -406,7 +514,7 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
                      */
                     if (parent.getThreadId() == entry.getParentThreadId() &&
                             !(entry.getStartTime() > parent.getEndTime() ||
-                            entry.getEndTime() < parent.getStartTime())) {
+                                    entry.getEndTime() < parent.getStartTime())) {
                         parent.addChild(entry);
                         root = false;
                         if (rootList != null && rootList.contains(entry)) {
@@ -618,7 +726,8 @@ public class ControlFlowView extends AbstractStateSystemTimeGraphView {
                     }
                     long time = currentThreadInterval.getStartTime();
                     if (time != lastEnd) {
-                        // don't create links where there are gaps in intervals due to the resolution
+                        // don't create links where there are gaps in intervals
+                        // due to the resolution
                         prevThread = 0;
                         prevEnd = 0;
                     }
